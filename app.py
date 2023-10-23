@@ -36,9 +36,9 @@ def get_sign(params, secret_key):
 
 #----------------------}
 
-@app.route('/debug', methods = ['GET'])
+@app.route('/', methods = ['GET'])
 def index():
-    return jsonify(bot.query_user_deals('SOLUSDT', 0, 5, 0))
+    return jsonify(bot.ping())
 
 @app.route('/get_balance', methods=['GET'])
 def get_balance(currency = 'USDT'):
@@ -95,7 +95,6 @@ def extractData():
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
         position_id = float(position_info['data']['records'][0]['position_id'])
         entry_price = float(position_info['data']['records'][0]['open_price'])
-        position_id = float(position_info['data']['records'][0]['position_id'])
         stop_loss_price = entry_price + stop_loss if position_type == 1 else entry_price - stop_loss
         take_profit_price = entry_price + take_profit if position_type == 2 else entry_price - take_profit
 
