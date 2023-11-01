@@ -78,8 +78,8 @@ def extractData():
 
 
     balance_usdt = float(bot.query_account()['data']['USDT']['available'])
-    margin_type = data.get('margin_type').upper()
-    symbol = data.get('symbol').upper()
+    margin_type = str(data.get('margin_type')).upper()
+    symbol = str(data.get('symbol')).upper()
     position = data.get('position')
     risk_pct = float(data.get('risk_percentage')) * 0.01
     stop_loss = float(data.get('stop_loss'))
@@ -109,8 +109,10 @@ def extractData():
         def set_exits():
             if position_id >= 0:
                 bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)
-                if take_profit_price != 0:
+                if take_profit > 0:
                     bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)
+                else:
+                    return {'no tp set'}
                     
                 
         #-------------------SET STOP LOSS AND TAKE PROFIT IF THE TRADE WAS EXECUTED SUCCESFULY    
