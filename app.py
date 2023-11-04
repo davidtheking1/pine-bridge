@@ -81,10 +81,10 @@ def extractData():
     margin_type = str(data.get('margin_type')).upper()
     symbol = str(data.get('symbol')).upper()
     position = data.get('position')
-    risk_pct = float(data.get('risk_percentage')) * 0.01
-    stop_loss = float(data.get('stop_loss'))
-    take_profit = float(data.get('take_profit'))
-    leverage_recieved = float(data.get('leverage'))
+    risk_pct = float(str(data.get('risk_percentage'))) * 0.01
+    stop_loss = float(str(data.get('stop_loss')))
+    take_profit = float(str(data.get('take_profit')))
+    leverage_recieved = float(str(data.get('leverage')))
     position_type = 2 if position.upper() == 'LONG' else 1
     risk_amount = balance_usdt * risk_pct
     quantity = risk_amount/stop_loss
@@ -100,9 +100,8 @@ def extractData():
         
         trade = bot.put_market_order(symbol, position_type, quantity)
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
-        position_id = float(position_info['data']['records'][0]['position_id'])
-        entry_price = float(position_info['data']['records'][0]['open_price'])
-        position_id = float(position_info['data']['records'][0]['position_id'])
+        position_id = float(str(position_info['data']['records'][0]['position_id']))
+        entry_price = float(str(position_info['data']['records'][0]['open_price']))
         stop_loss_price = entry_price + stop_loss if position_type == 1 else entry_price - stop_loss
         take_profit_price = entry_price + take_profit if position_type == 2 else entry_price - take_profit if take_profit != 0 else 0
 
@@ -125,7 +124,7 @@ def extractData():
 
     def exit_function():
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
-        position_id = float(position_info['data']['records'][0]['position_id'])
+        position_id = float(str(position_info['data']['records'][0]['position_id']))
         return jsonify(bot.close_market(symbol, int(position_id)), f'position id: {position_id}')
     
     
