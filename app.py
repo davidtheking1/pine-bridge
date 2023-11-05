@@ -137,6 +137,7 @@ def extractData():
     else:
         return 'invalid password'
 
+
 @app.route('/getbal', methods = ['POST'])
 def getbal():
     data = request.json
