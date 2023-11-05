@@ -129,11 +129,14 @@ def extractData():
     
     
     if data.get('signal') == 'entry' and isvalidpswd(password) == 'True':
-
-        return entry()
+        executed = entry()
+        print(executed)
+        return executed
     
     if data.get('signal') != 'entry' and isvalidpswd(password) == 'True':
-        return exit_function()
+        exited = exit_function()
+        print(exited)
+        return exited
     else:
         return 'invalid password'
 
