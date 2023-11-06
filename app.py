@@ -84,7 +84,7 @@ def extractData():
         position = data.get('position')
         risk_pct = (float(str(data.get('risk_percentage'))) * 0.01)
         stop_loss = float(str(data.get('stop_loss')))
-        take_profit = float(str(data.get('take_profit')))
+        take_profit = float(str(data.get('stop_loss')))
         leverage_recieved = float(str(data.get('leverage')))
         position_type = 2 if position.upper() == 'LONG' else 1
         risk_amount = balance_usdt * risk_pct
