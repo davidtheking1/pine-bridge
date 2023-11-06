@@ -73,21 +73,22 @@ def extractData():
     data = request.json
     id = str(data.get('access_id'))
     key = str(data.get('secret_key'))
+    symbol = str(data.get('symbol')).upper()
+
     password = data.get('password')
     bot = CoinexPerpetualApi(id, key)
 
-
-    balance_usdt = float(bot.query_account()['data']['USDT']['available'])
-    margin_type = str(data.get('margin_type')).upper()
-    symbol = str(data.get('symbol')).upper()
-    position = data.get('position')
-    risk_pct = float(str(data.get('risk_percentage'))) * 0.01
-    stop_loss = float(str(data.get('stop_loss')))
-    take_profit = float(str(data.get('take_profit')))
-    leverage_recieved = float(str(data.get('leverage')))
-    position_type = 2 if position.upper() == 'LONG' else 1
-    risk_amount = balance_usdt * risk_pct
-    quantity = risk_amount/stop_loss
+    if data.get('signal') == 'entry':
+        balance_usdt = float(bot.query_account()['data']['USDT']['available'])
+        margin_type = str(data.get('margin_type')).upper()
+        position = data.get('position')
+        risk_pct = (float(str(data.get('risk_percentage'))) * 0.01)
+        stop_loss = float(str(data.get('stop_loss')))
+        take_profit = float(str(data.get('take_profit')))
+        leverage_recieved = float(str(data.get('leverage')))
+        position_type = 2 if position.upper() == 'LONG' else 1
+        risk_amount = balance_usdt * risk_pct
+        quantity = risk_amount/stop_loss
 
 
 
@@ -133,7 +134,7 @@ def extractData():
         print(executed)
         return executed
     
-    if data.get('signal') != 'entry' and isvalidpswd(password) == 'True':
+    if data.get('signal') != 'entry':
         exited = exit_function()
         print(exited)
         return exited
