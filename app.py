@@ -116,7 +116,7 @@ def extractData():
                     
                 
         #-------------------SET STOP LOSS AND TAKE PROFIT IF THE TRADE WAS EXECUTED SUCCESFULY    
-        if trade['message'] == 'ok':
+        if trade['message'] == 'ok' or position_id >= 0:
             set_exits()
         
         
