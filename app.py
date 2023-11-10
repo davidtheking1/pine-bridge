@@ -25,7 +25,9 @@ def isvalidpswd(pswd):
                 return 'True'
     return 'False'
 
-
+def positionsize(stop_dist, risk_amt):
+    positionsize = risk_amt/stop_dist    # formula for position size: position_size = risk_amount/stoploss_distance
+    return positionsize
 
 #---------------------get signature for spot ---------------------{
 
@@ -67,14 +69,13 @@ def get_balance(currency = 'USDT'):
 
 
 
-
 @app.route('/webhook', methods=['POST'])
 def extractData():
     data = request.json
     id = str(data.get('access_id'))
     key = str(data.get('secret_key'))
     symbol = str(data.get('symbol')).upper()
-
+    stop_distance = float(data.get('stop_distance'))
     password = data.get('password')
     bot = CoinexPerpetualApi(id, key)
 
@@ -88,7 +89,7 @@ def extractData():
         leverage_recieved = float(str(data.get('leverage')))
         position_type = 2 if position.upper() == 'LONG' else 1
         risk_amount = balance_usdt * risk_pct
-        quantity = risk_amount/stop_loss
+        quantity = positionsize(stop_distance, risk_amount)
 
 
 
@@ -116,12 +117,12 @@ def extractData():
                     
                 
         #-------------------SET STOP LOSS AND TAKE PROFIT IF THE TRADE WAS EXECUTED SUCCESFULY    
-        if trade['message'] == 'ok' or position_id >= 0:
+        if trade['message'] == 'ok':
             set_exits()
         
         
 
-        return jsonify(f'trade take?-------------------{trade}.............................................balance = {balance_usdt}..... risk = {risk_pct}.... quantity = {quantity}--------------------.risk amount = {risk_amount}.....stop loss set? \n \n\n\n\n\n\n\n' + bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)['message'], 'tp set?' + bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)['message'], f'accepted stop loss argument {stop_loss_price}, tp price = {take_profit_price} and entry price is {entry_price}')
+        return jsonify(f'trade take?-------------------{trade}.............................................balance = {balance_usdt}..... risk = {risk_pct}.... quantity = {quantity}--------------------.risk amount = {risk_amount}.....stop loss set? \n ' + bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)['message'], 'tp set?' + bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)['message'], f'accepted stop loss argument {stop_loss_price}, tp price = {take_profit_price} and entry price is {entry_price}')
 
     def exit_function():
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
@@ -148,7 +149,7 @@ def getbal():
     id = str(data.get('access_id'))
     key = str(data.get('secret_key'))
     bot = CoinexPerpetualApi(id, key)
-    return bot.query_account()
+    return str(bot.query_account()['data']['USDT']['available'])
 
 if __name__ == '__main__':
     app.run(debug=True)
