@@ -8,9 +8,10 @@ import hashlib
 from flask import Flask, jsonify, request, render_template
 import requests
 import time
+import logging
 
 app = Flask(__name__)
-
+logging.basicConfig(level=logging.INFO)
 
 
 
@@ -78,6 +79,8 @@ def execution():
     password = data.get('password')
     bot = CoinexPerpetualApi(id, key)
 
+    logging.info(data)
+
     if data.get('signal') == 'entry':
         balance_usdt = float(bot.query_account()['data']['USDT']['available'])
         stop_distance = float(data.get('stop_distance'))
@@ -104,35 +107,39 @@ def execution():
         time.sleep(0.05)
 
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
-        position_id = float(str(position_info['data']['records'][0]['position_id']))
+        position_id = int(str(position_info['data']['records'][0]['position_id']))
         entry_price = float(str(position_info['data']['records'][0]['open_price']))
         stop_loss_price = entry_price + stop_loss if position_type == 1 else entry_price - stop_loss
         take_profit_price = entry_price + take_profit if position_type == 2 else entry_price - take_profit if take_profit != 0 else 0
         return [position_id, stop_loss_price, take_profit_price]
 
     def set_exits(position_id, stop_loss_price, take_profit_price):
-        bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)
-        bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)
+        sl_message = bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)['message']
+        tp_message = bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)['message']
+        return [sl_message, tp_message]
 
         
     def exit_function():
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
-        position_id = float(str(position_info['data']['records'][0]['position_id']))
+        position_id = int(str(position_info['data']['records'][0]['position_id']))
         return jsonify(bot.close_market(symbol, int(position_id)), f'position id: {position_id}')
     
     
     if data.get('signal') == 'entry' and isvalidpswd(password) == 'True':
         trade = entry()
-        time.sleep(0.05)
+        time.sleep(0.5)
         set_exits(trade[0], trade[1], trade[2])
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
-        position_id = float(str(position_info['data']['records'][0]['position_id']))
-        entry_price = float(str(position_info['data']['records'][0]['open_price']))        
-        return f'trade executed || quantity = {quantity} || entry price = {entry_price} || position id = {position_id}'
+        position_id = int(str(position_info['data']['records'][0]['position_id']))
+        entry_price = float(str(position_info['data']['records'][0]['open_price']))
+        response = f'trade executed || quantity = {quantity} || entry price = {entry_price} || position id = {position_id} || set stoploss message = {set_exits(trade[0], trade[1], trade[2])[0]} || set takeProfit message = {set_exits(trade[0], trade[1], trade[2])[1]}'
+        logging.info(response)
+        return response
     
-    if data.get('signal') != 'exit':
-        exit_function()
+    if data.get('signal') != 'entry':
+        logging.info(exit_function().json)
         return exit_function()
+
 
 
 @app.route('/getbal', methods = ['POST'])
