@@ -70,7 +70,7 @@ def get_balance(currency = 'USDT'):
 
 
 @app.route('/webhook', methods=['POST'])
-def extractData():
+def execution():
     data = request.json
     id = str(data.get('access_id'))
     key = str(data.get('secret_key'))
@@ -100,30 +100,21 @@ def extractData():
     def entry():
         adjust_leverage()
         
-        trade = bot.put_market_order(symbol, position_type, quantity)
+        bot.put_market_order(symbol, position_type, quantity)
+        time.sleep(0.05)
+
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
         position_id = float(str(position_info['data']['records'][0]['position_id']))
         entry_price = float(str(position_info['data']['records'][0]['open_price']))
         stop_loss_price = entry_price + stop_loss if position_type == 1 else entry_price - stop_loss
         take_profit_price = entry_price + take_profit if position_type == 2 else entry_price - take_profit if take_profit != 0 else 0
+        return [position_id, stop_loss_price, take_profit_price]
 
-        def set_exits():
-            if position_id >= 0:
-                bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)
-                if take_profit > 0:
-                    bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)
-                else:
-                    return {'no tp set'}
-                    
-                
-        #-------------------SET STOP LOSS AND TAKE PROFIT IF THE TRADE WAS EXECUTED SUCCESFULY    
-        if trade['message'] == 'ok':
-            set_exits()
+    def set_exits(position_id, stop_loss_price, take_profit_price):
+        bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)
+        bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)
+
         
-        
-
-        return jsonify(f'trade take?-------------------{trade}.............................................balance = {balance_usdt}..... risk = {risk_pct}.... quantity = {quantity}--------------------.risk amount = {risk_amount}.....stop loss set? \n ' + bot.adjust_stopLoss(symbol, 3, position_id, stop_loss_price)['message'], 'tp set?' + bot.adjust_takeProfit(symbol, 3, position_id, take_profit_price)['message'], f'accepted stop loss argument {stop_loss_price}, tp price = {take_profit_price} and entry price is {entry_price}')
-
     def exit_function():
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
         position_id = float(str(position_info['data']['records'][0]['position_id']))
@@ -131,16 +122,17 @@ def extractData():
     
     
     if data.get('signal') == 'entry' and isvalidpswd(password) == 'True':
-        executed = entry()
-        print(executed)
-        return executed
+        trade = entry()
+        time.sleep(0.05)
+        set_exits(trade[0], trade[1], trade[2])
+        position_info = bot.query_user_deals(symbol, 0, 1, 0)
+        position_id = float(str(position_info['data']['records'][0]['position_id']))
+        entry_price = float(str(position_info['data']['records'][0]['open_price']))        
+        return f'trade executed || quantity = {quantity} || entry price = {entry_price} || position id = {position_id}'
     
-    if data.get('signal') != 'entry':
-        exited = exit_function()
-        print(exited)
-        return exited
-    else:
-        return 'invalid password'
+    if data.get('signal') != 'exit':
+        exit_function()
+        return exit_function()
 
 
 @app.route('/getbal', methods = ['POST'])
