@@ -75,12 +75,12 @@ def extractData():
     id = str(data.get('access_id'))
     key = str(data.get('secret_key'))
     symbol = str(data.get('symbol')).upper()
-    stop_distance = float(data.get('stop_distance'))
     password = data.get('password')
     bot = CoinexPerpetualApi(id, key)
 
     if data.get('signal') == 'entry':
         balance_usdt = float(bot.query_account()['data']['USDT']['available'])
+        stop_distance = float(data.get('stop_distance'))
         margin_type = str(data.get('margin_type')).upper()
         position = data.get('position')
         risk_pct = (float(str(data.get('risk_percentage'))) * 0.01)
