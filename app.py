@@ -127,7 +127,7 @@ def execution():
     
     if data.get('signal') == 'entry' and isvalidpswd(password) == 'True':
         trade = entry()
-        time.sleep(0.5)
+        time.sleep(0.05)
         set_exits(trade[0], trade[1], trade[2])
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
         position_id = int(str(position_info['data']['records'][0]['position_id']))
