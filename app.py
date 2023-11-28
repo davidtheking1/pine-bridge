@@ -104,7 +104,7 @@ def execution():
         adjust_leverage()
         
         trade_message = bot.put_market_order(symbol, position_type, quantity)['message']
-        time.sleep(0.05)
+        time.sleep(0.005)
 
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
         position_id = int(str(position_info['data']['records'][0]['position_id']))
@@ -127,7 +127,7 @@ def execution():
     
     if data.get('signal') == 'entry' and isvalidpswd(password) == 'True':
         trade = entry()
-        time.sleep(0.05)
+        time.sleep(0.005)
         set_exits(trade[0], trade[1], trade[2])
         position_info = bot.query_user_deals(symbol, 0, 1, 0)
         position_id = int(str(position_info['data']['records'][0]['position_id']))
